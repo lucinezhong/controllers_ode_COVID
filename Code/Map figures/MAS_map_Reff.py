@@ -1,10 +1,9 @@
 import sys
 
-sys.path.append('/Users/luzhong/Documents/pythonCode/PDE-COVID')
+sys.path.append('Project')
 from input_library import *
 import Input
-import pandas as pd
-import numpy as np
+
 ################other pacages
 from pylab import *
 import matplotlib.pyplot as plt
@@ -14,9 +13,12 @@ import os, json, csv
 from shapely.geometry import Point, Polygon
 import pandas as pd
 import geopandas as gpd
+from joblib import Parallel, delayed
+import random
+import pickle
 
 
-path_to_cart = '/Users/lucinezhong/Documents/pythonCode/PDE-COVID/catogram/cart-1.2.2'
+path_to_cart='Project/catogram/cart-1.2.2'
 
 # import mpl_toolkits
 # mpl_toolkits.__path__.append('/usr/local/lib/python2.7/dist-packages/mpl_toolkits/')
@@ -165,39 +167,35 @@ MSA_statistics = Input.input_MSA_statistics()
 
 case='current'
 
-
-minmial_cap=1
-maxmal_cap=6
 if case=='current':
-    path_files = 'Dataset/'
-    df_controlled_R = pd.read_csv(path_files + 'MSA_S_I_R_D_SERO.csv')
+    path_files = 'results_trajectory_fitting/reported/'
+    df_controlled_R = pd.read_csv(path_files + 'MSAs-ODE-tracking-parameters.csv')
     output_list = []
     for date in np.unique(df_controlled_R['time']):
-        d = datetime.datetime.strptime(str(date), '%m-%d-%Y')
+        d = datetime.datetime.strptime(str(date), '%Y-%m-%d')
         if d >= datetime.datetime.strptime('2021-02-14', '%Y-%m-%d') and  d <= datetime.datetime.strptime('2021-02-20', '%Y-%m-%d'):
             output_list.append(date)
-    print(output_list)
     MSA_all = df_controlled_R[df_controlled_R['time'].isin(output_list)]
-    print(MSA_all)
-
     MSA_ids_input = list(pd.unique(df_controlled_R['MSA_code']))
-    MSA_value_input=[np.mean(df_controlled_R[df_controlled_R['MSA_code']==msa]['ratio'].values) for msa in MSA_ids_input]
+    MSA_value_input=[np.mean(df_controlled_R[df_controlled_R['MSA_code']==msa]['R_eff(t)'].values) for msa in MSA_ids_input]
     dict_temp = dict(zip(MSA_ids_input, MSA_value_input))
     dictionary = {}
     for msa in MSA_ids:
         dictionary[msa] = {}
         if msa in MSA_ids_input:
             dictionary[msa]['pop'] = MSA_statistics['pop'][msa]
-            dictionary[msa]['under_report'] =dict_temp[msa]
-            if dict_temp[msa]<minmial_cap:
-                dictionary[msa]['under_report']=minmial_cap
-            if dict_temp[msa]>maxmal_cap-1:
-                dictionary[msa]['under_report'] =maxmal_cap-1
+            dictionary[msa]['R_eff'] =dict_temp[msa]
+            if dict_temp[msa]<0.5:
+                dictionary[msa]['R_eff']=0.5
+            if dict_temp[msa]>2.5:
+                dictionary[msa]['R_eff'] =2.5
 
         else:
             dictionary[msa]['pop'] = 1
-            dictionary[msa]['under_report']=-1
+            dictionary[msa]['R_eff']=-1
 
+minmial_cap=0.5
+maxmal_cap=2
 print(minmial_cap,maxmal_cap)
 
 ####################MSA-level======================
@@ -231,7 +229,7 @@ for line in cartogrid:
     densitygrid.append(outline)
     count += 1
 
-np.save('/Users/luzhong/Documents/LuZHONGResearch/20200720PDE-Disease/analysis-files/reported/MSA_densitygrid', densitygrid)
+np.save('Project/analysis-files/reported/MSA_densitygrid', densitygrid)
 '''
 densitygrid=np.load('results_trajectory_fitting/MSA_densitygrid.npy')
 
@@ -247,18 +245,20 @@ for msa in MSA_ids:
         [interp_cartogram(cartogrid, cx, cy, [bb[0], bb[1]]) for bb in np.array(MSA_border[msa]).T])
 
 print('start_3')
-
-cmap = cm.get_cmap('RdBu', (maxmal_cap+1-minmial_cap)*1000)
+cmap = cm.get_cmap('RdBu', 2001)
 colors=[cmap(i) for i in range(cmap.N)]
-colors_dict=dict(zip([round(i/1000,3) for i in range(0,(maxmal_cap+1-minmial_cap)*1000)],colors))
-
-for strx in ['under_report']:
+colors_dict=dict(zip([round(i/1000+0.500,3) for i in range(0,2001)],colors))
+#for strx in ['R_eff_3','R_eff_4','R_eff_5','R_eff_6','R_eff_7','R_eff_8','R_eff_9','R_eff_10']:
+for strx in ['R_eff']:
     figs0, axes = plt.subplots(1, 1, figsize=(10, 5))
     for msa in MSA_ids:
         if dictionary[msa][strx]==-1:
             color='grey'
         else:
             color = colors_dict[round(dictionary[msa][strx], 3)]
+        if msa==35620:
+            print(msa,strx,dictionary[msa][strx])
+            print(matplotlib.colors.rgb2hex(color))
         xst, yst = np.array(MSA_border[msa])
         xm, ym = themap(xst, yst)
         #axes[0].plot(xm, ym, lw=1, c='w')
@@ -271,17 +271,17 @@ for strx in ['under_report']:
     for ax in [axes]: _ = ax.set_axis_off()
 
     figs0.subplots_adjust(left=0,right=0.9,top=1, bottom=0, wspace=0, hspace=0)
-    cax = figs0.add_axes([0.9, 0.1, 0.015, 0.7])
 
-    dd = 0.5
-    for cc in np.arange(minmial_cap, maxmal_cap, dd):
-        cax.fill((0, 0, 1, 1), ((cc - dd) / 2, (cc + dd) / 2, (cc + dd) / 2, (cc - dd) / 2), facecolor=colors_dict[cc])
+    cax = figs0.add_axes([0.9, 0.1, 0.015, 0.7])
+    dd = 0.1
+    for cc in np.arange(0.5, 2.5 + dd, dd):
+        cax.fill((0, 0, 1, 1), (cc - dd / 2, cc + dd / 2, cc + dd / 2, cc - dd / 2), facecolor=plt.get_cmap('RdBu')(cc/2))
     cax.yaxis.tick_right()
     #cax.set_yticklabels(map(str, [0,0.6,1.2,1.8,2.4,3.0]))
     ax2 = cax.twiny()
     cax.set_xticks([]), ax2.set_xticks([])
     #cax.set_ylim([0, 1])
-    plt.savefig(path_files+'MSA_map_under_reproting' + case + '.png',dpi=600)
+    plt.savefig(path_files+'MSA_map_R_eff_' + case + '.png',dpi=600)
     plt.close()
 
 

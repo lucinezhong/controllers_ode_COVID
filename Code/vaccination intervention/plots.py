@@ -1,5 +1,5 @@
 import sys
-sys.path.append('/Users/luzhong/Documents/pythonCode/PDE-COVID')
+sys.path.append('Project')
 from input_library import *
 import Input
 

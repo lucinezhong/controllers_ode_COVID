@@ -2,7 +2,7 @@
 from input_library import *
 from Input import *
 import sys
-sys.path.append('/Users/luzhong/Documents/pythonCode/PDE-COVID')
+sys.path.append('Project')
 start_date = datetime.datetime.strptime('2/01/20', '%m/%d/%y')
 end_date = datetime.datetime.strptime('02/20/21', '%m/%d/%y')
 plot_start_date= datetime.datetime.strptime('4/01/20', '%m/%d/%y')
@@ -533,7 +533,7 @@ if __name__ == '__main__':
         path_results='results_trajectory_fitting/reported/'
         path_files= 'results_trajectory_fitting/reported/'
         MSA_list = list(MSA_statistics['county'].keys())
-        #learn_parameter_MSA(df_empty, MSA_statistics, MSA_list,path_results,path_files,'reported')
+        learn_parameter_MSA(df_empty, MSA_statistics, MSA_list,path_results,path_files,'reported')
         print("trajectory_controller_two_controller_MSA")
         trajectory_controller_two_controller_MSA(df_empty, MSA_statistics,MSA_list,path_results,path_files)
 

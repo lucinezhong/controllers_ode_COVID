@@ -1,5 +1,5 @@
 import sys
-sys.path.append('/Users/luzhong/Documents/pythonCode/PDE-COVID')
+sys.path.append('Project')
 from input_library import *
 import Input
 from synth import *
@@ -11,8 +11,8 @@ global training_date
 emergency_date=datetime.datetime.strptime('2020-03-13', '%Y-%m-%d')
 start_date=datetime.datetime.strptime('2020-04-01', '%Y-%m-%d')
 end_date = datetime.datetime.strptime('2021-02-20', '%Y-%m-%d')
-#training_date=datetime.datetime.strptime('2020-10-01', '%Y-%m-%d')
-training_date= datetime.datetime.strptime('2021-02-20', '%Y-%m-%d')
+training_date=datetime.datetime.strptime('2020-10-01', '%Y-%m-%d')
+#training_date= datetime.datetime.strptime('2021-02-20', '%Y-%m-%d')
 
 ###for seroprevlanece
 #start_date=datetime.datetime.strptime('2020-04-12', '%Y-%m-%d')

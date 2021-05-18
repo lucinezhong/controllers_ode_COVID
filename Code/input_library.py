@@ -75,6 +75,6 @@ from itertools import combinations_with_replacement
 
 import itertools
 import os
-os.chdir("/Users/lucinezhong/Documents/LuZHONGResearch/20200720COVID-Controllers/")
-os.environ['PROJ_LIB'] = '/Users/lucinezhong/.conda/envs/PDE-COVID/share/proj'
-path_external='/Volumes/SeagateDrive/US-mobility/'
+os.chdir("Documents")
+os.environ['PROJ_LIB'] = '/Users/.conda/envs/PDE-COVID/share/proj'
+path_external='Dataset'

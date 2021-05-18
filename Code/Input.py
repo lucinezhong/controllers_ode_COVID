@@ -1,6 +1,6 @@
 from input_library import *
 import pickle
-path_external='/Volumes/SeagateDrive/US-mobility/'
+path_external='Dataset/'
 
 def input_ctry():
     f_read_R = open(path_external+'modified_covid_data_US/ctry_recovery.pkl', 'rb')

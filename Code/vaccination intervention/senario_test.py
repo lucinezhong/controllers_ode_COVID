@@ -1,9 +1,9 @@
 import sys
 
-sys.path.append('/Users/luzhong/Documents/pythonCode/PDE-COVID')
+sys.path.append('Project')
 from input_library import *
 
-path_external = '/Volumes/SeagateDrive 1/US-mobility/'
+path_external = 'Dataset'
 
 global date_check
 date_check = ['2020-12-10', '2020-12-11', '2020-12-12', '2020-12-13', '2020-12-14', '2020-12-15', '2020-12-16',
